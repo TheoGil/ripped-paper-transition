@@ -69,7 +69,6 @@ class App {
     this.update = this.update.bind(this);
 
     this.renderer = new Renderer({
-      dpr: window.devicePixelRatio,
       alpha: true,
       antialias: true,
     });
