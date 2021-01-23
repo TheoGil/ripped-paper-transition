@@ -27,6 +27,8 @@ uniform float uFrameThickness;
 uniform float uFrameNoiseAmp;
 uniform float uFrameNoiseFreq;
 
+// uniform float uAlpha;
+
 varying vec2 vUv;
 
 float stroke(float x, float s, float w) {
@@ -50,7 +52,7 @@ float rectSDF(vec2 st, vec2 s) {
 
 void main() {
     // Those two could be uniforms
-    vec3 tearColor = vec3(0.854, 0.847, 0.847); // #dad8d8
+    vec3 tearColor = vec3(1., 1., 1.); //vec3(0.854, 0.847, 0.847); // #dad8d8
     vec3 tearOutlineColor = vec3(0.094, 0.094, 0.094); // #181818
 
     // Remap progress a little bit to take into account the total thickness of the rip 
@@ -92,18 +94,18 @@ void main() {
         uTearOutlineThickness
     );
 
-    vec3 color = mix(
-        texture2D(uTexture1, vUv).rgb,
-        texture2D(uTexture2, vUv).rgb,
+    vec4 texture = mix(
+        texture2D(uTexture2, vUv),
+        texture2D(uTexture1, vUv),
         step(y, progress - tearThickness * .5)
     );
-    color = mix(color, tearColor, tear);
+    vec3 color = mix(texture.rgb, tearColor, tear);
     color = mix(color, tearOutlineColor, tearOutline);
 
     float alpha = fill(
         rectSDF(vUv, vec2(1.)) + snoise2(vUv * uFrameNoiseFreq) * uFrameNoiseAmp,
         1. - (1. - pow(abs(map(uProgress, 0., 1., -1., 1.)), 1.)) * uFrameThickness
-    );
+    ) * texture.a;
 
     gl_FragColor = vec4(color, alpha);
 }
